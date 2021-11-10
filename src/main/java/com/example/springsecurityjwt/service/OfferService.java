@@ -1,29 +1,37 @@
 package com.example.springsecurityjwt.service;
 
+import com.example.springsecurityjwt.assembler.OfferAssembler;
 import com.example.springsecurityjwt.dto.OfferDto;
 import com.example.springsecurityjwt.entity.Offer;
+import com.example.springsecurityjwt.repository.InsuranceTypeRepository;
 import com.example.springsecurityjwt.repository.OfferRepository;
+import com.example.springsecurityjwt.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import lombok.extern.java.Log;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.example.springsecurityjwt.specification.OfferSpecification.*;
+
+@Log
 @Service
 @AllArgsConstructor
 public class OfferService {
 
     private final OfferRepository offerRepository;
-    private final OfferConverter offerConverter;
+    private final InsuranceTypeRepository insuranceTypeRepository;
+    private final UserRepository userRepository;
+    private final OfferAssembler offerAssembler;
+    private final ContractService contractService;
 
     public OfferDto save(OfferDto offerDto) {
-        Offer saved = offerRepository.save(offerConverter.fromOfferDtoToOffer(offerDto));
-        return offerConverter.fromOfferToOfferDto(saved);
+        Offer saved = offerRepository.save(this.fromOfferDtoToOffer(offerDto));
+        return this.fromOfferToOfferDto(saved);
     }
 
     public boolean delete(Integer id) {
@@ -37,40 +45,79 @@ public class OfferService {
     public boolean update(Integer id, OfferDto offerDto) {
         if (offerRepository.existsById(id)) {
             offerDto.setId(id);
-            offerRepository.save(offerConverter.fromOfferDtoToOffer(offerDto));
+            offerRepository.save(this.fromOfferDtoToOffer(offerDto));
             return true;
         }
         return false;
     }
 
-    public OfferDto findOfferDtoById(Integer id) {
+    public OfferDto findById(Integer id) {
         Offer offer = offerRepository.findOfferById(id);
-        if (offer != null) {
-            return offerConverter.fromOfferToOfferDto(offer);
+        return offer != null ? offerAssembler.toModel(offer) : null;
+    }
+
+    public CollectionModel<OfferDto> findAll() {
+        List<Offer> offers = offerRepository.findAll();
+        return !offers.isEmpty() ? offerAssembler.toCollectionModel(offers) : null;
+    }
+
+    public CollectionModel<OfferDto> findAllByDescriptionContains(String search) {
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("cost").ascending().and(Sort.by("term").descending()));
+        Page<Offer> offers = offerRepository.findAllByDescriptionContains(search, pageable);
+        return !offers.isEmpty() ? offerAssembler.toCollectionModel(offers) : null;
+    }
+
+    public CollectionModel<OfferDto> filterAll(Integer minTerm, Integer maxTerm, Integer minCost, Integer maxCost, String description, Integer page, Integer size, String sort, String byWhat) {
+        Specification<Offer> specification = Specification.where(minTerm != null || maxTerm != null ? termC(minTerm, maxTerm) : null)
+                .and(minCost != null || maxCost != null ? costC(minCost, maxCost) : null)
+                .and(description == null ? null : descriptionC(description));
+        if(page == null) page = 1;
+        if(size == null) size = 10;
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.Direction.ASC, "cost");
+        if(byWhat.equals("cost")) {
+            if (sort.equals("ASC")) pageRequest = PageRequest.of(page - 1, size, Sort.Direction.ASC, "cost");
+            if (sort.equals("DESC")) pageRequest = PageRequest.of(page - 1, size, Sort.Direction.DESC, "cost");
         }
-        return null;
+        if(byWhat.equals("term")) {
+            if(sort.equals("ASC")) pageRequest = PageRequest.of(page - 1, size, Sort.Direction.ASC, "term");
+            if(sort.equals("DESC")) pageRequest = PageRequest.of(page - 1, size, Sort.Direction.DESC, "term");
+        }
+        Page<Offer> offers = offerRepository.findAll(specification, pageRequest);
+
+        return !offers.isEmpty() ? offerAssembler.toCollectionModel(offers) : null;
     }
 
-    public List<OfferDto> findAll() {
-        return offerRepository.findAll()
-                .stream()
-                .map(offerConverter::fromOfferToOfferDto)
-                .collect(Collectors.toList());
+    public Offer fromOfferDtoToOffer(OfferDto offerDto) {
+        Offer offer = new Offer();
+        offer.setId(offerDto.getId());
+        offer.setInsuranceType(insuranceTypeRepository.findInsuranceTypeById(offerDto.getInsuranceTypeId()));
+        offer.setInsurer(userRepository.findUserById(offerDto.getInsurerId()));
+        offer.setTerm(offerDto.getTerm());
+        offer.setCost(offerDto.getCost());
+        offer.setDescription(offerDto.getDescription());
+        if(offerDto.getContracts() != null) {
+            offer.setContracts(offerDto.getContracts().stream()
+                    .map(contractService::fromContractDtoToContract)
+                    .collect(Collectors.toList()));
+        }
+        return offer;
     }
 
-    public Page<OfferDto> findAllSort(Pageable pageable) {
-        List<OfferDto> offersDto = offerRepository.findAll(pageable)
-                .stream()
-                .map(offerConverter::fromOfferToOfferDto)
-                .collect(Collectors.toList());
-        return new PageImpl<>(offersDto);
-    }
-
-    public Page<OfferDto> findAllByDescriptionContains(String search, Pageable pageable) {
-        List<OfferDto> offersDto = offerRepository.findAllByDescriptionContains(search, pageable)
-                .stream()
-                .map(offerConverter::fromOfferToOfferDto)
-                .collect(Collectors.toList());
-        return new PageImpl<>(offersDto);
+    public OfferDto fromOfferToOfferDto(Offer offer) {
+        return OfferDto.builder()
+                .id(offer.getId())
+                .insuranceTypeId(offer.getInsuranceType().getId())
+                .insuranceTypeName(offer.getInsuranceType().getInsuranceType())
+                .insurerId(offer.getInsurer().getId())
+                .insurerName(offer.getInsurer().getName())
+                .term(offer.getTerm())
+                .cost(offer.getCost())
+                .description(offer.getDescription())
+                .contracts(offer.getContracts() != null
+                        ? offer.getContracts().stream()
+                        .map(contractService::fromContractToContractDto)
+                        .collect(Collectors.toList())
+                        : null)
+                .build();
     }
 }

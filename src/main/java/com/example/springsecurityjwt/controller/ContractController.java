@@ -36,7 +36,7 @@ public class ContractController {
     }
 
     @GetMapping(value = "/offers/contracts")
-    public ResponseEntity<List<Contract>> getContractsByOffer(@RequestBody Offer offer) {
+    public ResponseEntity<List<Contract>> findContractsByOffer(@RequestBody Offer offer) {
         final List<Contract> contracts = contractRepository.findAllByOffer(offer);
         return contracts != null && !contracts.isEmpty()
                 ? new ResponseEntity<>(contracts, HttpStatus.OK)
@@ -44,7 +44,7 @@ public class ContractController {
     }
 
     @GetMapping(value = "/contracts/{id}")
-    public ResponseEntity<Contract> getById(@PathVariable(name = "id") int id) {
+    public ResponseEntity<Contract> findContractById(@PathVariable(name = "id") int id) {
         final Contract contract = contractRepository.getById(id);
 
         return contract != null

@@ -27,7 +27,7 @@ public class OfferDto extends RepresentationModel<OfferDto> {
     private String insuranceTypeName;
     private Integer insurerId;
     private String insurerName;
-    @Min(5)
+    @Min(value = 5, message = "Age should not be less than 18")
     private Integer term;
     @Min(0)
     private BigDecimal cost;

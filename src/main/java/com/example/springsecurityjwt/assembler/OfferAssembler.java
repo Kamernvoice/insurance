@@ -6,6 +6,7 @@ import com.example.springsecurityjwt.dto.ContractDto;
 import com.example.springsecurityjwt.dto.OfferDto;
 import com.example.springsecurityjwt.entity.Contract;
 import com.example.springsecurityjwt.entity.Offer;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ public class OfferAssembler extends RepresentationModelAssemblerSupport<Offer, O
     {
         CollectionModel<OfferDto> actorModels = super.toCollectionModel(entities);
 
-        actorModels.add(linkTo(methodOn(OfferController.class).findAll()).withSelfRel());
+        actorModels.add(linkTo(methodOn(OfferController.class).findAll(Pageable.unpaged())).withSelfRel());
 
         return actorModels;
     }

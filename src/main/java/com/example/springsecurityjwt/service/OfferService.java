@@ -8,6 +8,7 @@ import com.example.springsecurityjwt.repository.OfferRepository;
 import com.example.springsecurityjwt.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.CollectionModel;
@@ -26,7 +27,6 @@ public class OfferService {
     private final OfferRepository offerRepository;
     private final InsuranceTypeRepository insuranceTypeRepository;
     private final UserRepository userRepository;
-    private final OfferAssembler offerAssembler;
     private final ContractService contractService;
 
     public OfferDto save(OfferDto offerDto) {
@@ -51,40 +51,35 @@ public class OfferService {
         return false;
     }
 
-    public OfferDto findById(Integer id) {
-        Offer offer = offerRepository.findOfferById(id);
-        return offer != null ? offerAssembler.toModel(offer) : null;
+    public Offer findById(Integer id) {
+        return offerRepository.findOfferById(id);
     }
 
-    public CollectionModel<OfferDto> findAll() {
-        List<Offer> offers = offerRepository.findAll();
-        return !offers.isEmpty() ? offerAssembler.toCollectionModel(offers) : null;
+    public Page<Offer> findAll(Pageable defaultPageable) {
+        return offerRepository.findAll(defaultPageable);
     }
 
-    public CollectionModel<OfferDto> findAllByDescriptionContains(String search) {
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("cost").ascending().and(Sort.by("term").descending()));
-        Page<Offer> offers = offerRepository.findAllByDescriptionContains(search, pageable);
-        return !offers.isEmpty() ? offerAssembler.toCollectionModel(offers) : null;
+    public Page<Offer> findAllByDescriptionContains(String search, Integer page, Integer size, String sort, Pageable defaultPageable) {
+        Pageable pageable;
+        if (page == null || size == null || sort == null) {
+            pageable = defaultPageable;
+        } else {
+            pageable = PageRequest.of(page, size, defaultPageable.getSort());
+        }
+        return offerRepository.findAllByDescriptionContains(search, pageable);
     }
 
-    public CollectionModel<OfferDto> filterAll(Integer minTerm, Integer maxTerm, Integer minCost, Integer maxCost, String description, Integer page, Integer size, String sort, String byWhat) {
+    public Page<Offer> filterAll(Integer minTerm, Integer maxTerm, Integer minCost, Integer maxCost, String description, Integer page, Integer size, String sort, Pageable defaultPageable) {
         Specification<Offer> specification = Specification.where(minTerm != null || maxTerm != null ? termC(minTerm, maxTerm) : null)
                 .and(minCost != null || maxCost != null ? costC(minCost, maxCost) : null)
                 .and(description == null ? null : descriptionC(description));
-        if(page == null) page = 1;
-        if(size == null) size = 10;
-        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.Direction.ASC, "cost");
-        if(byWhat.equals("cost")) {
-            if (sort.equals("ASC")) pageRequest = PageRequest.of(page - 1, size, Sort.Direction.ASC, "cost");
-            if (sort.equals("DESC")) pageRequest = PageRequest.of(page - 1, size, Sort.Direction.DESC, "cost");
+        Pageable pageable;
+        if (page == null || size == null || sort == null) {
+            pageable = defaultPageable;
+        } else {
+            pageable = PageRequest.of(page, size, defaultPageable.getSort());
         }
-        if(byWhat.equals("term")) {
-            if(sort.equals("ASC")) pageRequest = PageRequest.of(page - 1, size, Sort.Direction.ASC, "term");
-            if(sort.equals("DESC")) pageRequest = PageRequest.of(page - 1, size, Sort.Direction.DESC, "term");
-        }
-        Page<Offer> offers = offerRepository.findAll(specification, pageRequest);
-
-        return !offers.isEmpty() ? offerAssembler.toCollectionModel(offers) : null;
+        return offerRepository.findAll(specification, pageable);
     }
 
     public Offer fromOfferDtoToOffer(OfferDto offerDto) {

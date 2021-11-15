@@ -21,6 +21,6 @@ public final class OfferSpecification {
     }
 
     public static Specification<Offer> descriptionC(String search) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.<String> get("description"), search);
+        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("description"), search);
     }
 }

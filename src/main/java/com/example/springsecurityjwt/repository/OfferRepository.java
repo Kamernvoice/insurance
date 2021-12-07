@@ -16,8 +16,8 @@ import java.util.List;
 
 public interface OfferRepository extends JpaRepository<Offer, Integer>, JpaSpecificationExecutor<Offer> {
 
+
     Offer findOfferById(Integer id);
-    Slice<Offer> findAllByInsurer(User insurer, Pageable pageable);
     Page<Offer> findAllByDescriptionContains(String search, Pageable pageable);
     List<Offer> findAllByInsurer(User insurer);
     Offer  findOfferByContracts(Contract contract);

@@ -29,11 +29,11 @@ public class OfferAssembler extends RepresentationModelAssemblerSupport<Offer, O
     @Override
     public CollectionModel<OfferDto> toCollectionModel(Iterable<? extends Offer> entities)
     {
-        CollectionModel<OfferDto> actorModels = super.toCollectionModel(entities);
+        CollectionModel<OfferDto> offerModels = super.toCollectionModel(entities);
 
-        actorModels.add(linkTo(methodOn(OfferController.class).findAll(Pageable.unpaged())).withSelfRel());
+        offerModels.add(linkTo(methodOn(OfferController.class).findAll(Pageable.unpaged())).withSelfRel());
 
-        return actorModels;
+        return offerModels;
     }
 
     @Override

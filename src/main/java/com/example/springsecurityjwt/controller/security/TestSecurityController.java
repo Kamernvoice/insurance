@@ -2,12 +2,15 @@ package com.example.springsecurityjwt.controller.security;
 
 import com.example.springsecurityjwt.entity.InsuranceType;
 import com.example.springsecurityjwt.repository.InsuranceTypeRepository;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.List;
 
+@Log
 @RestController
 public class TestSecurityController {
 
@@ -24,7 +27,8 @@ public class TestSecurityController {
     }
 
     @GetMapping("/client/get")
-    public String getClient() {
+    public String getClient(Principal principal) {
+        log.severe(principal.toString());
         return "Hi client";
     }
 

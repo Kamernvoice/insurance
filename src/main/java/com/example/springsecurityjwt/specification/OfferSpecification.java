@@ -1,9 +1,12 @@
 package com.example.springsecurityjwt.specification;
 
 import com.example.springsecurityjwt.entity.Offer;
+import lombok.extern.java.Log;
 import org.springframework.data.jpa.domain.Specification;
 
+@Log
 public final class OfferSpecification {
+
     public static Specification<Offer> termC(Integer minTerm, Integer maxTerm) {
         if(minTerm == null) minTerm = 0;
         if(maxTerm == null) maxTerm = Integer.MAX_VALUE;
@@ -17,6 +20,7 @@ public final class OfferSpecification {
         if(maxCost == null) maxCost = Integer.MAX_VALUE;
         Integer finalMinCost = minCost;
         Integer finalMaxCost = maxCost;
+        log.severe("min " + finalMinCost);
         return ((root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("cost"), finalMinCost, finalMaxCost));
     }
 

@@ -8,6 +8,7 @@ import com.example.springsecurityjwt.entity.Passport;
 import com.example.springsecurityjwt.repository.*;
 import com.example.springsecurityjwt.service.UserConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import com.example.springsecurityjwt.entity.User;
 import java.security.Principal;
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:3000/")
 @RestController
 public class ProfileController {
 
@@ -39,6 +41,13 @@ public class ProfileController {
         this.userConverter = userConverter;
         this.offerRepository = offerRepository;
         this.contractRepository = contractRepository;
+    }
+
+    @GetMapping(value = "/profile")
+    public ResponseEntity<?> getProfile(Principal principal) {
+        User user = userRepository.findByLogin(principal.getName());
+        UserDto userDto = userConverter.fromUserToUserDto(user);
+        return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
     @PostMapping(value = "/insurer/licence")

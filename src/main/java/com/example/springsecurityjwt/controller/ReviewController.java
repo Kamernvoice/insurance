@@ -42,4 +42,13 @@ public class ReviewController {
                 ? new ResponseEntity<>(reviews, HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
+    @DeleteMapping(value = "/reviews/{id}")
+    public ResponseEntity<?> deleteById(@PathVariable(name = "id") int id) {
+        if (reviewRepository.existsById(id)) {
+            reviewRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

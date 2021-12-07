@@ -4,9 +4,12 @@ import com.example.springsecurityjwt.assembler.OfferAssembler;
 import com.example.springsecurityjwt.dto.OfferDto;
 import com.example.springsecurityjwt.entity.Offer;
 import com.example.springsecurityjwt.exception.CustomNotFoundException;
+import com.example.springsecurityjwt.repository.OfferRepository;
 import com.example.springsecurityjwt.service.OfferService;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.web.PageableDefault;
@@ -15,11 +18,14 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.*;
 import java.util.Set;
 
+@CrossOrigin(origins = "http://localhost:3000/")
+@Component
 @Log
 @RestController
 @AllArgsConstructor
@@ -45,19 +51,16 @@ public class OfferController {
     @PostMapping(value = "/offers")
     public ResponseEntity<?> save(@RequestBody @Valid OfferDto offerDto) {
 
-        Set<ConstraintViolation<OfferDto>> violations = validator.validate(offerDto);
-        for (ConstraintViolation<OfferDto> violation : violations) {
-            log.severe(violation.getMessage());
-        }
         offerService.save(offerDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/offers")
-    public ResponseEntity<CollectionModel<OfferDto>> findAll(@PageableDefault(sort = {"cost"}, direction = Sort.Direction.ASC) Pageable defaultPageable) {
+    public ResponseEntity<PagedModel<OfferDto>> findAll(@PageableDefault(sort = {"cost"}, direction = Sort.Direction.ASC) Pageable defaultPageable) {
         final Page<Offer> offers = offerService.findAll(defaultPageable);
 
         PagedModel<OfferDto> dto = pagedResourcesAssembler.toModel(offers, offerAssembler);
+
         return !offers.isEmpty()
                 ? ResponseEntity.ok(dto)
                 : ResponseEntity.notFound().build();
@@ -66,11 +69,12 @@ public class OfferController {
     @GetMapping(value = "/search")
     public ResponseEntity<CollectionModel<OfferDto>> search(@RequestParam(required = false) String search,
                                                             Integer page, Integer size, String sort,
-                                                            @PageableDefault(sort = {"cost"}, direction = Sort.Direction.ASC) Pageable defaultPageable) throws Exception{
+                                                            @PageableDefault(sort = {"cost"}, direction = Sort.Direction.ASC) Pageable defaultPageable) {
 
         final Page<Offer> offers = offerService.findAllByDescriptionContains(search, page, size, sort, defaultPageable);
-        if(offers.isEmpty()) throw new CustomNotFoundException("Offer not found");
+
         PagedModel<OfferDto> dto = pagedResourcesAssembler.toModel(offers, offerAssembler);
+
         return !offers.isEmpty()
                 ? ResponseEntity.ok(dto)
                 : ResponseEntity.notFound().build();
@@ -82,9 +86,11 @@ public class OfferController {
                                                                  Integer maxCost, Integer minCost,
                                                                  String search,
                                                                  Integer page, Integer size, String sort,
-                                                          @PageableDefault(sort = {"cost"}, direction = Sort.Direction.ASC) Pageable defaultPageable) {
+                                                          @PageableDefault(sort = {"cost"}, direction = Sort.Direction.ASC) Pageable defaultPageable) throws Exception{
 
         final Page<Offer> offers = offerService.filterAll(minTerm, maxTerm, minCost, maxCost, search, page, size, sort, defaultPageable);
+        if(offers.isEmpty()) throw new CustomNotFoundException("Offer not found");
+        log.info("go search...");
 
         PagedModel<OfferDto> dto = pagedResourcesAssembler.toModel(offers, offerAssembler);
         return !offers.isEmpty()
@@ -105,6 +111,10 @@ public class OfferController {
 
     @PutMapping(value = "/offers/{id}")
     public ResponseEntity<?> update(@PathVariable(name = "id") int id, @RequestBody OfferDto offerDto) {
+        Set<ConstraintViolation<OfferDto>> violations = validator.validate(offerDto);
+        for (ConstraintViolation<OfferDto> violation : violations) {
+            log.severe(violation.getMessage());
+        }
         final boolean updated = offerService.update(id, offerDto);
 
         return updated

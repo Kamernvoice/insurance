@@ -1,5 +1,6 @@
 package com.example.springsecurityjwt.config.jwt;
 
+import com.example.springsecurityjwt.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -22,10 +23,10 @@ public class JwtProvider {
     @Value("$(jwt.secret)")
     private String jwtSecret;
 
-    public String generateToken(String login) {
+    public String generateToken(User user) {
         Date date = Date.from(LocalDate.now().plusDays(15).atStartOfDay(ZoneId.systemDefault()).toInstant());
         return Jwts.builder()
-                .setSubject(login)
+                .setSubject(user.getLogin())
                 .setExpiration(date)
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();

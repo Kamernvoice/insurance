@@ -1,15 +1,12 @@
 package com.example.springsecurityjwt.repository;
 
 import com.example.springsecurityjwt.entity.User;
-import lombok.AllArgsConstructor;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import javax.persistence.Table;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)

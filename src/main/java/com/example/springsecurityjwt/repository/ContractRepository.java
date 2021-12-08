@@ -11,4 +11,5 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
 
     List<Contract> findAllByClient(User client);
     List<Contract> findAllByOffer(Offer offer);
+    List<Contract> findAllByOffer_Id(Integer id);
 }

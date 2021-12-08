@@ -1,6 +1,5 @@
 package com.example.springsecurityjwt.service;
 
-import com.example.springsecurityjwt.assembler.OfferAssembler;
 import com.example.springsecurityjwt.dto.OfferDto;
 import com.example.springsecurityjwt.entity.Offer;
 import com.example.springsecurityjwt.repository.InsuranceTypeRepository;
@@ -8,13 +7,10 @@ import com.example.springsecurityjwt.repository.OfferRepository;
 import com.example.springsecurityjwt.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.example.springsecurityjwt.specification.OfferSpecification.*;

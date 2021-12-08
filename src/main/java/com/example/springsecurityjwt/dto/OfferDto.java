@@ -1,6 +1,5 @@
 package com.example.springsecurityjwt.dto;
 
-import com.example.springsecurityjwt.entity.Contract;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import lombok.*;

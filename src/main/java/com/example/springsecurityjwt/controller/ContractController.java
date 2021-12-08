@@ -1,7 +1,6 @@
 package com.example.springsecurityjwt.controller;
 
 import com.example.springsecurityjwt.entity.Contract;
-import com.example.springsecurityjwt.entity.Offer;
 import com.example.springsecurityjwt.repository.ContractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,9 +34,9 @@ public class ContractController {
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping(value = "/offers/contracts")
-    public ResponseEntity<List<Contract>> findContractsByOffer(@RequestBody Offer offer) {
-        final List<Contract> contracts = contractRepository.findAllByOffer(offer);
+    @GetMapping(value = "/offers/{id}/contracts")
+    public ResponseEntity<List<Contract>> findContractsByOffer(@PathVariable(name = "id") int id) {
+        final List<Contract> contracts = contractRepository.findAllByOffer_Id(id);
         return contracts != null && !contracts.isEmpty()
                 ? new ResponseEntity<>(contracts, HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);

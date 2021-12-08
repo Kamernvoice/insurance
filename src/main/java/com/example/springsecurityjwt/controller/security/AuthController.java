@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.java.Log;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @Log

@@ -1,18 +1,12 @@
 package com.example.springsecurityjwt.dto;
 
-import com.example.springsecurityjwt.entity.Contract;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
-import javax.persistence.Column;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import java.math.BigDecimal;
 import java.sql.Date;
-import java.util.List;
 
 @Data
 @Builder
